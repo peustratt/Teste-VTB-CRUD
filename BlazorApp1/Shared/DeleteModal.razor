@@ -1,0 +1,42 @@
+﻿@inject ICompanyService CompanyService
+
+<div>
+    <ModalTitle>Deletar empresa</ModalTitle>
+    <ModalBody>
+        <p>@Nome</p>
+        <p>Tem certeza que deseja deletar esta empresa?</p>
+    </ModalBody>
+    <ModalFooter>
+        <button class="btn btn-danger" @onclick="Confirm">Deletar</button>
+        <button class="btn btn-secondary" @onclick="Close">Cancelar</button>
+    </ModalFooter>
+</div>
+
+@code {
+
+    [CascadingParameter]
+    BlazoredModalInstance BlazoredModal { get; set; } = default!;
+
+    [Parameter]
+    public string? Id { get; set; }
+
+    [Parameter]
+    public string? Nome { get; set; }
+    
+    [Parameter]
+    public Action Update { get; set; }
+
+    private async Task Close() => await BlazoredModal.CloseAsync();
+
+    private async Task Confirm()
+    {
+        if (Id != null)
+        {
+            var result = await CompanyService.DeleteCompany(Id);
+            if (result) Update();
+        }
+
+        await BlazoredModal.CloseAsync();
+    }
+
+}

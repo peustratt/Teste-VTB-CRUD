@@ -1,0 +1,97 @@
+﻿@page "/"
+@inject ICompanyService CompanyService
+@inject ISegmentoService SegmentoService
+@inject NavigationManager NavigationManager
+@inject IModalService ModalService
+
+<PageTitle>Weather company</PageTitle>
+
+<div class="flex-row">
+    <h1>Empresas/Clientes</h1>
+    <button class="btn btn-success float-end" @onclick="ShowCreateCompany"><i class="oi oi-plus pe-2"></i>Adicionar</button>
+</div>
+
+@if (CompanyService.Companies == null)
+{
+    <p>
+        <em>Loading...</em>
+    </p>
+}
+else
+{
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Nome</th>
+            <th>Site</th>
+            <th>Segmento</th>
+            <th>Acões</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var company in CompanyService.Companies)
+        {
+            <tr>
+                <td>@company.Nome</td>
+                <td>@company.Site</td>
+                <td>@SegmentoService.Segmentos?.Find(segmento => segmento.Id.oid == company.Segmento.oid)?.Nome</td>
+                <td>
+                    <button class="btn btn-secondary" @onclick="() => ShowDetailsModal(company.Id.oid)">
+                        <i class="oi oi-eye"></i>
+                    </button>
+                    <button class="btn btn-primary" @onclick="() => ShowCompany(company.Id.oid)">
+                        <i class="oi oi-pencil"></i>
+                    </button>
+                    <button class="btn btn-danger" @onclick="() => ShowDeleteModal(company.Id.oid, company.Nome)">
+                        <i class="oi oi-delete"></i>
+                    </button>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+
+
+
+@code {
+
+    public void StateChanged()
+    {
+        StateHasChanged();
+    }
+
+    public async Task ShowDetailsModal(string id)
+    {
+        var parameter = new ModalParameters().Add("Id", id);
+
+        ModalService.Show<CompanyDetailsModal>("Detalhes", parameter);
+    }
+
+    public async Task ShowDeleteModal(string id, string nome)
+    {
+        var parameters = new ModalParameters()
+            .Add("Id", id)
+            .Add("Nome", nome)
+            .Add("Update", StateChanged);
+
+        ModalService.Show<DeleteModal>("Deletar", parameters);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await SegmentoService.GetSegmentos();
+        await CompanyService.GetCompanies();
+    }
+
+    void ShowCompany(string id)
+    {
+        NavigationManager.NavigateTo($"Company/{id}");
+    }
+
+    void ShowCreateCompany()
+    {
+        NavigationManager.NavigateTo("Company");
+    }
+
+}

@@ -1,0 +1,64 @@
+﻿@inject ICompanyService CompanyService
+@inject ISegmentoService SegmentoService
+
+@if (_company != null)
+{
+    <div>
+        <ModalTitle>Delete Company</ModalTitle>
+        <ModalBody>
+            <EditForm Model="_company">
+                <div>
+                    <label for="nome">Nome</label>
+                    <InputText disabled="true" id="nome" @bind-Value="_company.Nome" class="form-control"></InputText>
+                </div>
+                <div>
+                    <label for="site">Site</label>
+                    <InputText disabled="true" id="site" @bind-Value="_company.Site" class="form-control"></InputText>
+                </div>
+                <div>
+                    <label for="segmento">Segmento</label>
+                    <InputSelect disabled="true" id="segmento" @bind-Value="_company.Segmento.oid" class="form-select">
+                        @if (SegmentoService.Segmentos != null)
+                        {
+                            foreach (var segmento in SegmentoService.Segmentos)
+                            {
+                                <option value="@segmento.Id.oid">@segmento.Nome</option>
+                            }
+                        }
+                    </InputSelect>
+                </div>
+                <div class="form-check form-switch">
+                    <InputCheckbox disabled="true" id="ativo" @bind-Value="_company.Active" class="form-check-input"></InputCheckbox>
+                    <label class="form-check-label" for="ativo">Ativo</label>
+                </div>
+            </EditForm>
+        </ModalBody>
+        <ModalFooter>
+            <button class="btn btn-secondary" @onclick="Close">Fechar</button>
+        </ModalFooter>
+    </div>
+}
+
+@code {
+
+    [CascadingParameter]
+    BlazoredModalInstance BlazoredModal { get; set; } = default!;
+
+    [Parameter]
+    public string? Id { get; set; }
+
+    private async Task Close() => await BlazoredModal.CloseAsync();
+
+    private Company _company = new Company { Segmento = new Id { oid = "asdfasdfasdfasdf", } };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await SegmentoService.GetSegmentos();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _company = await CompanyService.GetCompany(Id);
+    }
+
+}
